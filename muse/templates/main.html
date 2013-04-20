@@ -1,0 +1,11 @@
+{% extends "templates/base.html" %}
+{% block bodycontent %}
+<div class="hero-unit">
+  <h1>Codename Muse</h1>
+  <p>Welcome to Codename Muse. Muse exists to help us learn more about our music. To start, type an artist name below.</p>
+</div>
+<form action="/artist" method="post">
+  <div><input type="text" name="artist"></textarea></div>
+  <div><input class="btn btn-primary" type="submit" value="Find Artist"></div>
+</form>
+{% endblock %}

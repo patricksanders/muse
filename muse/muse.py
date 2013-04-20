@@ -33,8 +33,27 @@ class MainPage(webapp2.RequestHandler):
 			'url_linktext': url_linktext,
 		}
 		
-		template = JINJA_ENVIRONMENT.get_template('templates/index.html')
+		template = JINJA_ENVIRONMENT.get_template('templates/main.html')
 		self.response.write(template.render(template_values))
+		
+class AboutPage(webapp2.RequestHandler):
+	def get(self):
+		# user = users.get_current_user()
+		# 
+		# if user:
+		# 	url = users.create_logout_url(self.request.uri)
+		# 	url_linktext = 'Logout'
+		# else:
+		# 	url = users.create_login_url(self.request.uri)
+		# 	url_linktext = 'Login'
+		# 
+		# template_values = {
+		# 	'url': url,
+		# 	'url_linktext': url_linktext,
+		# }
+
+		template = JINJA_ENVIRONMENT.get_template('templates/about.html')
+		self.response.write(template.render())
 
 class GetArtist(webapp2.RequestHandler):
 	def post(self):
@@ -79,5 +98,6 @@ class GetArtist(webapp2.RequestHandler):
 		self.response.write(json.dumps(rdioalbums, ensure_ascii=True, indent=2))
 
 app = webapp2.WSGIApplication([('/', MainPage),
+								('/about', AboutPage),
 								('/artist', GetArtist)],
 								debug=True)
