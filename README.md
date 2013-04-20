@@ -1,7 +1,7 @@
-muse
+codename muse
 ====
 
-Codename Muse: A music API aggregator
+A music API aggregator
 
 Codename Muse works with Rdio® and The Echo Nest. See LICENSE.md for more information.
 
