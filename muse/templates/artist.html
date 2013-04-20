@@ -1,5 +1,19 @@
 {% extends "templates/base.html" %}
 {% block bodycontent %}
 
-
+<div class="row">
+	<div class="thumbnail span3">
+		<a href="{{ image_url }}"><img src="{{ image_url }}" alt="{{ artist_name }}"/></a>
+	</div>
+	<div class="span8">
+		<h1>{{ artist_name }}</h1>
+		<div class="well">
+			<h4>Popularity</h4>
+			<div class="progress">
+				<div class="bar" style="width: {{ popularity }}%;"></div>
+			</div>
+			<h4>Albums</h4>
+		</div>
+	</div>
+</div>
 {% endblock %}

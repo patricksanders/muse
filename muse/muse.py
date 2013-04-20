@@ -56,46 +56,59 @@ class AboutPage(webapp2.RequestHandler):
 		self.response.write(template.render())
 
 class GetArtist(webapp2.RequestHandler):
-	def post(self):
-		query = self.request.get('artist')
-		
-		# Find artist on Rdio
-		rdio = Rdio((RDIO_CONSUMER_KEY, RDIO_CONSUMER_SECRET))
-		searchResults = rdio.call('search', {'query': query,
-										'types': 'Artist'
-										})
-		firstResult = searchResults['result']['results'][0]['key']
-		
-		# Find artist on EchoNest
-		en_artist = artist.Artist(query)
-		rdioalbums = rdio.call('getAlbumsForArtist', {'artist': firstResult})
-		
-		# Print results for EchoNest then Rdio
-		self.response.headers['Content-Type'] = 'text/plain'
-		self.response.write('First EchoNest result: ' + repr(en_artist) + '\n')
-		self.response.write('First Rdio search result key: ' + firstResult + '\n')
-		self.response.write('Albums for artist:\n')
-		self.response.write(json.dumps(rdioalbums, ensure_ascii=True, indent=2))
+	# def post(self):
+	# 	query = self.request.get('artist')
+	# 	
+	# 	# Find artist on Rdio
+	# 	rdio = Rdio((RDIO_CONSUMER_KEY, RDIO_CONSUMER_SECRET))
+	# 	searchResults = rdio.call('search', {'query': query,
+	# 									'types': 'Artist'
+	# 									})
+	# 	firstResult = searchResults['result']['results'][0]['key']
+	# 	
+	# 	# Find artist on EchoNest
+	# 	en_artist = artist.Artist(query)
+	# 	rdioalbums = rdio.call('getAlbumsForArtist', {'artist': firstResult})
+	# 	
+	# 	# Print results for EchoNest then Rdio
+	# 	self.response.headers['Content-Type'] = 'text/plain'
+	# 	self.response.write('First EchoNest result: ' + repr(en_artist) + '\n')
+	# 	self.response.write('First Rdio search result key: ' + firstResult + '\n')
+	# 	self.response.write('Albums for artist:\n')
+	# 	self.response.write(json.dumps(rdioalbums, ensure_ascii=True, indent=2))
 	
 	def get(self):
 		query = self.request.get('artist')
 		
 		# Find artist on Rdio
-		searchResults = rdio.call('search', {'query': query,
-										'types': 'Artist'
-										})
-		firstResult = searchResults['result']['results'][0]['key']
+		# searchResults = rdio.call('search', {'query': query,
+		# 								'types': 'Artist'
+		# 								})
+		# firstResult = searchResults['result']['results'][0]['key']
 		
 		# Find artist on EchoNest
 		en_artist = artist.Artist(query)
-		rdioalbums = rdio.call('getAlbumsForArtist', {'artist': firstResult})
+		# rdioalbums = rdio.call('getAlbumsForArtist', {'artist': firstResult})
+		images = en_artist.get_images(results=1)
+		image_url = images[0]['url']
+		artist_name = en_artist.name
+		popularity = en_artist.hotttnesss * 100
+		
+		template_values = {
+			'image_url': image_url,
+			'artist_name': artist_name,
+			'popularity': popularity,
+		}
+		
+		template = JINJA_ENVIRONMENT.get_template('templates/artist.html')
+		self.response.write(template.render(template_values))
 		
 		# Print results for EchoNest then Rdio
-		self.response.headers['Content-Type'] = 'text/plain'
-		self.response.write('First EchoNest result: ' + repr(en_artist) + '\n')
-		self.response.write('First Rdio search result key: ' + firstResult + '\n')
-		self.response.write('Albums for artist:\n')
-		self.response.write(json.dumps(rdioalbums, ensure_ascii=True, indent=2))
+		# self.response.headers['Content-Type'] = 'text/plain'
+		# self.response.write('First EchoNest result: ' + repr(en_artist) + '\n')
+		# self.response.write('First Rdio search result key: ' + firstResult + '\n')
+		# self.response.write('Albums for artist:\n')
+		# self.response.write(json.dumps(rdioalbums, ensure_ascii=True, indent=2))
 
 app = webapp2.WSGIApplication([('/', MainPage),
 								('/about', AboutPage),
