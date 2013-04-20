@@ -36,3 +36,6 @@ nosetests.xml
 
 # Mac
 .DS_Store
+
+# Sensitive stuff
+settings.py
