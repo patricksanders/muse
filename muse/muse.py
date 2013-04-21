@@ -52,7 +52,7 @@ class GetArtist(webapp2.RequestHandler):
 		hotttnesss = en_artist.hotttnesss * 50
 		familiarity = en_artist.familiarity * 50
 		similar_list = artist.similar(ids=en_artist.id, results=7)
-		song_list = en_artist.get_songs(results=25)
+		song_list = en_artist.get_songs(results=15)
 		doc_counts = en_artist.get_doc_counts()
 		num_songs = len(song_list)
 		blog_list = en_artist.get_blogs(results=5, high_relevance=True)

@@ -72,7 +72,7 @@
 
 	/* Carousel base class */
 	.carousel {
-	  margin-bottom: 60px;
+	  margin-bottom: 20px;
 	}
 
 	.carousel .container {
@@ -84,7 +84,7 @@
 	  height: 80px;
 	  margin-top: 0;
 	  font-size: 120px;
-	  text-shadow: 0 1px 1px rgba(0,0,0,.4);
+	  text-shadow: 1px 1px 1px #000000;
 	  background-color: transparent;
 	  border: 0;
 	  z-index: 10;
@@ -113,7 +113,7 @@
 	  margin: 0;
 	  line-height: 1.25;
 	  color: #fff;
-	  text-shadow: 0 1px 1px rgba(0,0,0,.4);
+	  text-shadow: 0px 1px 2px #000000;
 	}
 	.carousel-caption .btn {
 	  margin-top: 10px;
@@ -308,7 +308,7 @@
 		  <div class="container">
 			<div class="carousel-caption">
 			  <h1>Codename muse</h1>
-			  <p class="lead">Welcome to codename muse. Muse exists to help us learn more about our music. To start, type an artist name below.</p>
+			  <p class="lead">Welcome to codename muse. Muse exists to help us learn more about our music. To start, type or choose an artist name below.</p>
 			</div>
 		  </div>
 		</div>
@@ -342,12 +342,13 @@
 	<!-- Wrap the rest of the page in another container to center all the content. -->
 
 	<div class="container marketing">
-	  <form class="form-search" action="/artist" method="get">
+	  <h1 class="text-center">Artist Search</h1>
+	  <form class="form-search text-center" action="/artist" method="get">
 	    <input type="text" class="input-large search-query" name="artist"></textarea>
 	    <button type="submit" class="btn">Find Artist</button>
 	  </form>
 	  <div class="well">
-	  	  <p class="lead">Popular Now</p><small>Click one!</small>
+	  	  <p class="lead">Popular Now</p>
 	  	  <ul class="inline">
 	  		{% for hot in hot_list %}
 	  		  <li><a href="/artist?artist={{ hot.name }}">{{ hot.name }}</a></li>
