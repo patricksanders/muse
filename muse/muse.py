@@ -92,12 +92,14 @@ class GetArtist(webapp2.RequestHandler):
 		images = en_artist.get_images(results=1)
 		image_url = images[0]['url']
 		artist_name = en_artist.name
-		popularity = en_artist.hotttnesss * 100
+		hotttnesss = en_artist.hotttnesss * 50
+		familiarity = en_artist.familiarity * 50
 		
 		template_values = {
 			'image_url': image_url,
 			'artist_name': artist_name,
-			'popularity': popularity,
+			'hotttnesss': hotttnesss,
+			'familiarity': familiarity,
 		}
 		
 		template = JINJA_ENVIRONMENT.get_template('templates/artist.html')
