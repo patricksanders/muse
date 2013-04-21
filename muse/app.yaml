@@ -9,8 +9,8 @@ handlers:
   static_files: favicon.ico
   upload: favicon\.ico
 
-- url: /css
-  static_dir: templates/css
+- url: /img
+  static_dir: img
 
 - url: .*
   script: muse.app

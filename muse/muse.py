@@ -1,4 +1,4 @@
-import cgi, jinja2, webapp2, os, json
+import cgi, jinja2, webapp2, os, json, random
 from settings import *
 from google.appengine.api import users
 import apis
@@ -8,6 +8,8 @@ from apis.rdio import Rdio
 
 JINJA_ENVIRONMENT = jinja2.Environment(
 	loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
+
+random.seed()
 	
 # Set EchoNest API credentials (values located in settings.py)
 enconfig.ECHO_NEST_API_KEY = ECHONEST_API_KEY
@@ -19,22 +21,8 @@ rdio = Rdio((RDIO_CONSUMER_KEY, RDIO_CONSUMER_SECRET))
 
 class MainPage(webapp2.RequestHandler):
 	def get(self):
-		user = users.get_current_user()
-		
-		if user:
-			url = users.create_logout_url(self.request.uri)
-			url_linktext = 'Logout'
-		else:
-			url = users.create_login_url(self.request.uri)
-			url_linktext = 'Login'
-		
-		template_values = {
-			'url': url,
-			'url_linktext': url_linktext,
-		}
-		
-		template = JINJA_ENVIRONMENT.get_template('templates/main.html')
-		self.response.write(template.render(template_values))
+		template = JINJA_ENVIRONMENT.get_template('templates/index.html')
+		self.response.write(template.render())
 		
 class AboutPage(webapp2.RequestHandler):
 	def get(self):
@@ -89,8 +77,8 @@ class GetArtist(webapp2.RequestHandler):
 		# Find artist on EchoNest
 		en_artist = artist.Artist(query)
 		# rdioalbums = rdio.call('getAlbumsForArtist', {'artist': firstResult})
-		images = en_artist.get_images(results=1)
-		image_url = images[0]['url']
+		images = en_artist.get_images(results=15)
+		image_url = images[random.randint(0,14)]['url']
 		artist_name = en_artist.name
 		hotttnesss = en_artist.hotttnesss * 50
 		familiarity = en_artist.familiarity * 50
