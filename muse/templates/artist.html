@@ -13,8 +13,55 @@
 				<div class="bar bar-info" style="width: {{ hotttnesss }}%;"></div>
 				<div class="bar bar-success" style="width: {{ familiarity }}%;"></div>
 			</div>
-			<h4>Albums</h4>
+			<h4>Average Danceability</h4>
+			<div class="progress">
+				<div class="bar bar-info" style="width: {{ danceability }}%;"></div>
+			</div>
+			<h4>Genres</h4>
+			<ul class="inline">
+				{% for term in term_list %}
+				  <li>{{ term['name'] }}</li>
+				{% endfor %}
+			</ul>
+			<h4>Similar</h4>
+			<ul class="inline">
+				{% for similar in similar_list %}
+				  <li><a href="/artist?artist={{ similar.name }}">{{ similar.name }}</a></li>
+				{% endfor %}
+			</ul>
 		</div>
 	</div>
 </div>
+<hr class="featurette-divider">
+
+<div class="featurette">
+  <i class="icon-time featurette-image pull-right"></i>
+  <h2 class="featurette-heading"><span class="muted">{{ artist_name }} has an average song length of</span> {{ avg_song_length }} minutes<span class="muted">.</span></h2>
+  <p class="lead">Based on {{ total_songs }} songs, with a total length of {{ total_song_length }} minutes.</p>
+</div>
+
+<hr class="featurette-divider">
+
+<div class="featurette">
+  <i class="icon-laptop featurette-image pull-left"></i>
+  <h2 class="featurette-heading">Oh yeah, it's that good. <span class="muted">See for yourself.</span></h2>
+  <p class="lead">Donec ullamcorper nulla non metus auctor fringilla. Vestibulum id ligula porta felis euismod semper. Praesent commodo cursus magna, vel scelerisque nisl consectetur. Fusce dapibus, tellus ac cursus commodo.</p>
+</div>
+
+<hr class="featurette-divider">
+
+<div class="featurette">
+  <i class="icon-quote-right featurette-image pull-right"></i>
+  <h2 class="featurette-heading"><span class="muted">There are</span> {{ blog_count }} people <span class="muted">blogging about {{ artist_name }}.</span></h2>
+  <p class="lead">
+	  Here are a few:
+	  <ul>
+		{% for blog in blog_list %}
+		  <li><a href="{{ blog['url'] }}">{{ blog['name'] }}</a></li>
+		{% endfor %}
+	  </ul>
+  </p>
+</div>
+
+<hr class="featurette-divider">
 {% endblock %}
