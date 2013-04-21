@@ -342,6 +342,14 @@
 	<!-- Wrap the rest of the page in another container to center all the content. -->
 
 	<div class="container marketing">
+	  <div class="well">
+		  <p class="lead">Popular Now</p>
+		  <ul class="inline">
+			{% for hot in hot_list %}
+		      <li><a href="/artist?artist={{ hot.name }}">{{ hot.name }}</a></li>
+		    {% endfor %}
+		  </ul>
+ 	  </div>
 	  <form action="/artist" method="get">
 	    <div><input type="text" name="artist"></textarea></div>
 	    <div><input class="btn btn-primary" type="submit" value="Find Artist"></div>
