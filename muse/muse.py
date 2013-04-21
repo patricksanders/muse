@@ -25,7 +25,6 @@ class MainPage(webapp2.RequestHandler):
 		
 		template_values = {
 			'hot_list': hot_list,
-			'analytics': ANALYTICS_CODE,
 		}
 		
 		template = JINJA_ENVIRONMENT.get_template('templates/index.html')
@@ -85,7 +84,6 @@ class GetArtist(webapp2.RequestHandler):
 			'avg_song_length': avg_song_length,
 			'blog_count': doc_counts['blogs'],
 			'blog_list': blog_list,
-			'analytics': ANALYTICS_CODE,
 		}
 		
 		template = JINJA_ENVIRONMENT.get_template('templates/artist.html')
