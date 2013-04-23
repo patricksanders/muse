@@ -1,6 +1,6 @@
 import cgi, jinja2, webapp2, os, json, random
 from settings import *
-from google.appengine.api import users
+from google.appengine.api import users, memcache
 import apis
 from apis.pyechonest import config as enconfig
 from apis.pyechonest import *
@@ -10,6 +10,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 	loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
 
 random.seed()
+client = memcache.Client()
 	
 # Set EchoNest API credentials (values located in settings.py)
 enconfig.ECHO_NEST_API_KEY = ECHONEST_API_KEY
@@ -21,10 +22,12 @@ rdio = Rdio((RDIO_CONSUMER_KEY, RDIO_CONSUMER_SECRET))
 
 class MainPage(webapp2.RequestHandler):
 	def get(self):
-		hot_list = artist.top_hottt(results=10)
+		memcache.add(key='hot_list', value=artist.top_hottt(results=10), time=3600)
+		hot_list = client.gets('hot_list')
 		
 		template_values = {
 			'hot_list': hot_list,
+			'tracking': TRACKING,
 		}
 		
 		template = JINJA_ENVIRONMENT.get_template('templates/index.html')
@@ -32,62 +35,97 @@ class MainPage(webapp2.RequestHandler):
 		
 class AboutPage(webapp2.RequestHandler):
 	def get(self):
+		template_values = {
+			'tracking': TRACKING,
+		}
+		
 		template = JINJA_ENVIRONMENT.get_template('templates/about.html')
-		self.response.write(template.render())
+		self.response.write(template.render(template_values))
 
 class GetArtist(webapp2.RequestHandler):
 	def get(self):
 		query = self.request.get('artist')
+		section = self.request.get('section')
 		
-		# Find artist on Rdio
-		# searchResults = rdio.call('search', {'query': query,
-		# 								'types': 'Artist'
-		# 								})
-		# firstResult = searchResults['result']['results'][0]['key']
+		# Put artist object from Echo Nest in memcache if it's not there already
+		memcache.add(key=query, value=artist.Artist(query), time=3600)
+		en_artist = client.gets(query)
+		if en_artist is None:
+			en_artist = artist.Artist(query)
+			memcache.add(key=query, value=en_artist, time=3600)
+			
+		song_list = None
 		
-		# Find artist on EchoNest
-		en_artist = artist.Artist(query)
-		images = en_artist.get_images(results=15)
-		image_url = images[random.randint(0,14)]['url']
-		hotttnesss = en_artist.hotttnesss * 50
-		familiarity = en_artist.familiarity * 50
-		similar_list = artist.similar(ids=en_artist.id, results=7)
-		song_list = en_artist.get_songs(results=15)
-		doc_counts = en_artist.get_doc_counts()
-		num_songs = len(song_list)
-		blog_list = en_artist.get_blogs(results=5, high_relevance=True)
+		if not section:
+			# Find artist on EchoNest
+			images = en_artist.get_images(results=15)
+			image_url = images[random.randint(0,14)]['url']
+			
+			template_values = {
+				'image_url': image_url,
+				'artist_name': en_artist.name,
+				'tracking': TRACKING,
+			}
+			
+			template = JINJA_ENVIRONMENT.get_template('templates/artist.html')
+			self.response.write(template.render(template_values))
 		
-		# Calculate average danceability
-		total_danceability = 0
-		for song in song_list:
-			total_danceability += song.get_audio_summary()['danceability']
-		danceability = (total_danceability / num_songs) * 100
+		if section is 'overview':
+			hotttnesss = en_artist.hotttnesss * 50
+			familiarity = en_artist.familiarity * 50
+			similar_list = artist.similar(ids=en_artist.id, results=7)
+			if song_list is None:
+				song_list = en_artist.get_songs(results=15)
+			
+			# Calculate average danceability
+			total_danceability = 0
+			for song in song_list:
+				total_danceability += song.get_audio_summary()['danceability']
+			danceability = (total_danceability / num_songs) * 100
+			response = {
+				'hotttnesss': hotttnesss,
+				'familiarity': familiarity,
+				'danceability': danceability,
+				'term_list': en_artist.terms,
+				'similar_list': similar_list,
+			}
+			
+			self.response.headers['Content-Type'] = 'text/plain'
+			self.response.write(section)
+
 		
-		# Calculate total and average song length
-		total_song_length = 0
-		for song in song_list:
-			total_song_length += song.get_audio_summary()['duration']
-		total_song_length = total_song_length / 60
-		avg_song_length = total_song_length / num_songs
+		if section is 'song_length':
+			if song_list is None:
+				song_list = en_artist.get_songs(results=15)
+			num_songs = len(song_list)
+			
+			# Calculate total and average song length
+			total_song_length = 0
+			for song in song_list:
+				total_song_length += song.get_audio_summary()['duration']
+			total_song_length = total_song_length / 60
+			avg_song_length = total_song_length / num_songs
+			
+			response = {
+				'total_songs': num_songs,
+				'total_song_length': total_song_length,
+				'avg_song_length': avg_song_length,
+			}
+			
+			self.response.headers['Content-Type'] = 'text/plain'
+			self.response.write(response)
 		
-		
-		template_values = {
-			'image_url': image_url,
-			'artist_name': en_artist.name,
-			'hotttnesss': hotttnesss,
-			'familiarity': familiarity,
-			'danceability': danceability,
-			'term_list': en_artist.terms,
-			'similar_list': similar_list,
-			'total_songs': num_songs,
-			'total_song_length': total_song_length,
-			'avg_song_length': avg_song_length,
-			'blog_count': doc_counts['blogs'],
-			'blog_list': blog_list,
-		}
-		
-		template = JINJA_ENVIRONMENT.get_template('templates/artist.html')
-		self.response.write(template.render(template_values))
+		if section is 'blogs':
+			doc_counts = en_artist.get_doc_counts()
+			blog_list = en_artist.get_blogs(results=5, high_relevance=True)
+			
+			response = {
+				'blog_count': doc_counts['blogs'],
+				'blog_list': blog_list,
+			}
+			
+			self.response.headers['Content-Type'] = 'text/plain'
+			self.response.write(response)
 
 app = webapp2.WSGIApplication([('/', MainPage),
 								('/about', AboutPage),
