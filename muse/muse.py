@@ -43,29 +43,6 @@ class AboutPage(webapp2.RequestHandler):
 		self.response.write(template.render(template_values))
 
 class GetArtist(webapp2.RequestHandler):
-	def post(self):
-		query = self.request.get('name')
-		
-		# Put artist object from Echo Nest in memcache if it's not there already
-		memcache.add(key=query, value=artist.Artist(query), time=3600)
-		en_artist = client.gets(query)
-		if en_artist is None:
-			en_artist = artist.Artist(query)
-			memcache.add(key=query, value=en_artist, time=3600)
-		
-		# Find artist on EchoNest
-		images = en_artist.get_images(results=15)
-		image_url = images[random.randint(0,14)]['url']
-		
-		template_values = {
-			'image_url': image_url,
-			'artist_name': en_artist.name,
-			'tracking': TRACKING,
-		}
-		
-		template = JINJA_ENVIRONMENT.get_template('templates/artist.html')
-		self.response.write(template.render(template_values))
-	
 	def get(self):
 		query = self.request.get('name')
 		section = self.request.get('section')
