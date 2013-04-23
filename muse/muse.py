@@ -43,8 +43,31 @@ class AboutPage(webapp2.RequestHandler):
 		self.response.write(template.render(template_values))
 
 class GetArtist(webapp2.RequestHandler):
+	def post(self):
+		query = self.request.get('name')
+		
+		# Put artist object from Echo Nest in memcache if it's not there already
+		memcache.add(key=query, value=artist.Artist(query), time=3600)
+		en_artist = client.gets(query)
+		if en_artist is None:
+			en_artist = artist.Artist(query)
+			memcache.add(key=query, value=en_artist, time=3600)
+		
+		# Find artist on EchoNest
+		images = en_artist.get_images(results=15)
+		image_url = images[random.randint(0,14)]['url']
+		
+		template_values = {
+			'image_url': image_url,
+			'artist_name': en_artist.name,
+			'tracking': TRACKING,
+		}
+		
+		template = JINJA_ENVIRONMENT.get_template('templates/artist.html')
+		self.response.write(template.render(template_values))
+	
 	def get(self):
-		query = self.request.get('artist')
+		query = self.request.get('name')
 		section = self.request.get('section')
 		
 		# Put artist object from Echo Nest in memcache if it's not there already
@@ -70,7 +93,9 @@ class GetArtist(webapp2.RequestHandler):
 			template = JINJA_ENVIRONMENT.get_template('templates/artist.html')
 			self.response.write(template.render(template_values))
 		
-		if section is 'overview':
+		elif section is 'overview':
+			self.response.headers['Content-Type'] = 'application/json'
+			
 			hotttnesss = en_artist.hotttnesss * 50
 			familiarity = en_artist.familiarity * 50
 			similar_list = artist.similar(ids=en_artist.id, results=7)
@@ -90,11 +115,10 @@ class GetArtist(webapp2.RequestHandler):
 				'similar_list': similar_list,
 			}
 			
-			self.response.headers['Content-Type'] = 'text/plain'
-			self.response.write(section)
+			self.response.write(json.dumps(response))
 
 		
-		if section is 'song_length':
+		elif section is 'song_length':
 			if song_list is None:
 				song_list = en_artist.get_songs(results=15)
 			num_songs = len(song_list)
@@ -112,10 +136,10 @@ class GetArtist(webapp2.RequestHandler):
 				'avg_song_length': avg_song_length,
 			}
 			
-			self.response.headers['Content-Type'] = 'text/plain'
+			self.response.headers['Content-Type'] = 'application/json'
 			self.response.write(response)
 		
-		if section is 'blogs':
+		elif section is 'blogs':
 			doc_counts = en_artist.get_doc_counts()
 			blog_list = en_artist.get_blogs(results=5, high_relevance=True)
 			
@@ -124,8 +148,12 @@ class GetArtist(webapp2.RequestHandler):
 				'blog_list': blog_list,
 			}
 			
-			self.response.headers['Content-Type'] = 'text/plain'
+			self.response.headers['Content-Type'] = 'application/json'
 			self.response.write(response)
+			
+		else:
+			self.response.headers['Content-Type'] = 'text/plain'
+			self.response.write('uh oh')
 
 app = webapp2.WSGIApplication([('/', MainPage),
 								('/about', AboutPage),

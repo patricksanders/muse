@@ -344,14 +344,14 @@
 	<div class="container marketing">
 	  <h1 class="text-center">Artist Search</h1>
 	  <form class="form-search text-center" action="/artist" method="get">
-	    <input type="text" class="input-large search-query" name="artist"></textarea>
+	    <input type="text" class="input-large search-query" name="name"></textarea>
 	    <button type="submit" class="btn">Find Artist</button>
 	  </form>
 	  <div class="well">
 	  	  <p class="lead">Popular Now</p>
 	  	  <ul class="inline">
 	  		{% for hot in hot_list %}
-	  		  <li><a href="/artist?artist={{ hot.name }}">{{ hot.name }}</a></li>
+	  		  <li><a href="/artist?name={{ hot.name }}">{{ hot.name }}</a></li>
 	  		{% endfor %}
 	  	  </ul>
 	  </div>
