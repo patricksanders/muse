@@ -1,29 +1,72 @@
 {% extends "templates/base.html" %}
-{% block ajax %}
+
+{% block title %}{{ artist_name }}{% endblock %}
+
+{% block head_extra %}
+<link href="//netdna.bootstrapcdn.com/font-awesome/3.0.2/css/font-awesome.css" rel="stylesheet">
+<link href="/css/artist.css" rel="stylesheet">
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
 <script>
 $(document).ready(function()
 {
-	// initBinding();
 	$.getJSON('/artist?name={{ artist_name }}&section=stats', 
-			function(data) {
-				var hot_width = "width:" + data['hotttnesss'] + "%;";
-				$('#hot_bar').attr("style", hot_width);
-				var fam_width = "width:" + data['familiarity'] + "%;";
-				$('#fam_bar').attr("style", fam_width);
-				var dance_width = "width:" + data['danceability'] + "%;";
-				$('#dance_bar').attr("style", dance_width);
-				console.log(data);
+		function(data) {
+			var hot_width = "width:" + (data.hotttnesss).toFixed(2) + "%;";
+			$('#hot_bar').attr("style", hot_width);
+			var fam_width = "width:" + (data.familiarity).toFixed(2) + "%;";
+			$('#fam_bar').attr("style", fam_width);
+			var dance_width = "width:" + (data.danceability).toFixed(2) + "%;";
+			$('#dance_bar').attr("style", dance_width);
+			$('#wait_alert').hide(1000, function () {
+				$(this).remove();
 			});
+		}
+	);
+
+	$.getJSON('/artist?name={{ artist_name }}&section=overview', 
+		function(data) {
+			$.each(data.term_list, function() {
+				$('#genre_list').append($("<li>" + this + "</li>"))
+			});
+			$.each(data.similar_list, function() {
+				var li = $("<li><a href=\"/artist?name=" + this + "\">" + this + "</a></li>")
+				$('#similar_list').append(li)
+			});
+		}
+	);
+
+	$.getJSON('/artist?name={{ artist_name }}&section=song_length', 
+		function(data) {
+			var total_song_length = data.total_song_length;
+			var avg_song_length = data.avg_song_length;
+			var total_songs = data.total_songs;
+
+			$('#total_song_length').text((total_song_length).toFixed(2));
+			$('#avg_song_length').text((avg_song_length).toFixed(2));
+			$('#total_songs').text(total_songs);
+		}
+	);
+
+	$.getJSON('/artist?name={{ artist_name }}&section=blogs', 
+		function(data) {
+			$('#blog_count').text(data.blog_count);
+			$.each(data.blog_list, function() {
+				var li = $("<li><a href=\"/artist?name=" + this.url + "\">" + this.name + "</a></li>")
+				$('#blogs').append(li)
+			});
+		}
+	);
 });
-// function initBinding() 
-// { 
-// 	$("#danceability-bar").attr("style", "width: 0%;"); 
-// }
+
 </script>
 {% endblock %}
 
 {% block bodycontent %}
+<div class="alert alert-info" id="wait_alert">
+	<button type="button" class="close" data-dismiss="alert">&times;</button>
+	<h4>Cruncing some numbers...</h4>
+	This should only take a moment.
+</div>
 <div class="row">
 	<div class="thumbnail span3">
 		<a href="{{ image_url }}"><img src="{{ image_url }}" alt="{{ artist_name }}"/></a>
@@ -41,20 +84,16 @@ $(document).ready(function()
 				<div class="bar bar-info" id="dance_bar"></div>
 			</div>
 			<h4>Genres</h4>
-			<ul class="inline">
-				<span id="genre_list"></span>
-			</ul>
+			<ul class="inline" id="genre_list"></ul>
 			<h4>Similar</h4>
-			<ul class="inline">
-				<span id="similar_list"></span>
-			</ul>
+			<ul class="inline" id="similar_list"></ul>
 		</div>
 	</div>
 </div>
 <hr class="featurette-divider">
 
 <div class="featurette">
-  <i class="icon-time featurette-image pull-right"></i>
+  <i class="icon-time featurette-image pull-left"></i>
   <h2 class="featurette-heading"><span class="muted">{{ artist_name }} has an average song length of</span> <span id="avg_song_length"></span> minutes<span class="muted">.</span></h2>
   <p class="lead">Based on <span id="total_songs"></span> popular songs, with a total length of <span id="total_song_length"></span> minutes.</p>
 </div>
@@ -62,26 +101,12 @@ $(document).ready(function()
 <hr class="featurette-divider">
 
 <div class="featurette">
-  <i class="icon-laptop featurette-image pull-left"></i>
-  <h2 class="featurette-heading">This is a placeholder. <span class="muted">For now.</span></h2>
-  <p class="lead">Words, words, and more words.</p>
-</div>
-
-<hr class="featurette-divider">
-
-<div class="featurette">
-  <i class="icon-quote-right featurette-image pull-right"></i>
+  <i class="icon-laptop featurette-image pull-right"></i>
   <h2 class="featurette-heading"><span class="muted">There are</span> <span id="blog_count"></span> people <span class="muted">blogging about {{ artist_name }}.</span></h2>
-  <p class="lead">
-	  Here are a few:
-	  <ul>
-		<li><span id="blog1"></span></li>
-		<li><span id="blog2"></span></li>
-		<li><span id="blog3"></span></li>
-		<li><span id="blog4"></span></li>
-		<li><span id="blog5"></span></li>
-	  </ul>
-  </p>
+    <p class="lead">
+  	  Here are a few:
+  	  <ul id="blogs"></ul>
+    </p>
 </div>
 
 <hr class="featurette-divider">

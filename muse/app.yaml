@@ -12,6 +12,9 @@ handlers:
 - url: /img
   static_dir: img
 
+- url: /css
+  static_dir: templates/css
+
 - url: .*
   script: muse.app
 

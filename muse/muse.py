@@ -1,12 +1,10 @@
-import apis
-import cgi
 import jinja2
 import webapp2
 import os
 import json
 import random
 from settings import *
-from google.appengine.api import users, memcache
+from google.appengine.api import memcache
 from apis.pyechonest import config as enconfig
 from apis.pyechonest import *
 from apis.rdio import Rdio
@@ -61,9 +59,10 @@ class GetArtist(webapp2.RequestHandler):
 		"""
 		memcache.add(key=query, value=artist.Artist(query), time=3600)
 		en_artist = client.gets(query)
-		memcache.add(key='song_list',
+		song_list_key = 'song_list-' + en_artist.name
+		memcache.add(key=song_list_key,
 					value=en_artist.get_songs(results=NUM_SONGS), time=3600)
-		song_list = client.gets('song_list')
+		song_list = client.gets(song_list_key)
 		
 		""" Generate response
 		
