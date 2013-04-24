@@ -56,12 +56,14 @@ class GetArtist(webapp2.RequestHandler):
 		section = self.request.get('section')
 		
 		""" Retrieve artist from Echo Nest
-		Put artist object in memcache if it's not there already """
+		Put artist object and song list in memcache if they're
+		not there already 
+		"""
 		memcache.add(key=query, value=artist.Artist(query), time=3600)
 		en_artist = client.gets(query)
-		if en_artist is None:
-			en_artist = artist.Artist(query)
-			memcache.add(key=query, value=en_artist, time=3600)
+		memcache.add(key='song_list',
+					value=en_artist.get_songs(results=NUM_SONGS), time=3600)
+		song_list = client.gets('song_list')
 		
 		""" Generate response
 		
@@ -87,24 +89,27 @@ class GetArtist(webapp2.RequestHandler):
 			
 			template = JINJA_ENVIRONMENT.get_template('templates/artist.html')
 			self.response.write(template.render(template_values))
+		elif section == 'stats':
+			data = self.getStats(en_artist, song_list)
+			json.dump(data, self.response)
 		elif section == 'overview':
 			data = self.getOverview(en_artist)
 			self.response.headers['Content-Type'] = 'application/json'
-			self.response.write(data)
+			json.dump(data, self.response)
 		elif section == 'song_length':
-			data = self.getSongLength(en_artist)
+			data = self.getSongLength(en_artist, song_list)
 			self.response.headers['Content-Type'] = 'application/json'
-			self.response.write(data)
+			json.dump(data, self.response)
 		elif section == 'blogs':
-			data = self.getBlogs(en_artist)
+			data = self.getBlogs(en_artist, song_list)
 			self.response.headers['Content-Type'] = 'application/json'
-			self.response.write(data)
+			json.dump(data, self.response)
 		else:
 			self.response.headers['Content-Type'] = 'text/plain'
 			self.response.write('That section doesn\'t exist')
 	
-	""" Returns JSON with relevant blog entries """
-	def getBlogs(self, en_artist):
+	""" Returns dict with relevant blog entries """
+	def getBlogs(self, en_artist, song_list):
 		doc_counts = en_artist.get_doc_counts()
 		blog_list = en_artist.get_blogs(results=5, high_relevance=True)
 		blogs = []
@@ -121,10 +126,8 @@ class GetArtist(webapp2.RequestHandler):
 		}
 		return data
 	
-	""" Returns JSON including general artist info """
+	""" Returns dict including general artist info """
 	def getOverview(self, en_artist):
-		hotttnesss = en_artist.hotttnesss * 50
-		familiarity = en_artist.familiarity * 50
 		similar_artists = en_artist.get_similar(results=7)
 		terms = en_artist.get_terms()
 		
@@ -135,7 +138,31 @@ class GetArtist(webapp2.RequestHandler):
 		for item in terms:
 			terms_list.append(item['name'])
 		
-		song_list = en_artist.get_songs(results=NUM_SONGS)
+		data = {
+			'term_list': terms_list,
+			'similar_list': similar_list,
+		}
+		return data
+	
+	""" Returns dict including avg and total song length """
+	def getSongLength(self, en_artist, song_list):
+		""" Calculate total and average song length """
+		total_song_length = 0
+		for song in song_list:
+			total_song_length += song.get_audio_summary()['duration']
+		total_song_length = total_song_length / 60
+		avg_song_length = total_song_length / NUM_SONGS
+		
+		data = {
+			'total_songs': NUM_SONGS,
+			'total_song_length': total_song_length,
+			'avg_song_length': avg_song_length,
+		}
+		return data
+	
+	def getStats(self, en_artist, song_list):
+		hotttnesss = en_artist.hotttnesss * 50
+		familiarity = en_artist.familiarity * 50
 		
 		""" Calculate average danceability """
 		total_danceability = 0
@@ -146,27 +173,6 @@ class GetArtist(webapp2.RequestHandler):
 			'hotttnesss': hotttnesss,
 			'familiarity': familiarity,
 			'danceability': danceability,
-			'term_list': terms_list,
-			'similar_list': similar_list,
-		}
-		return data
-	
-	""" Returns JSON including avg and total song length """
-	def getSongLength(self, en_artist):
-		song_list = en_artist.get_songs(results=NUM_SONGS)
-		num_songs = len(song_list)
-		
-		""" Calculate total and average song length """
-		total_song_length = 0
-		for song in song_list:
-			total_song_length += song.get_audio_summary()['duration']
-		total_song_length = total_song_length / 60
-		avg_song_length = total_song_length / num_songs
-		
-		data = {
-			'total_songs': num_songs,
-			'total_song_length': total_song_length,
-			'avg_song_length': avg_song_length,
 		}
 		return data
 

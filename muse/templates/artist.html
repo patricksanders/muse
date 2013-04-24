@@ -1,6 +1,29 @@
 {% extends "templates/base.html" %}
-{% block bodycontent %}
+{% block ajax %}
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+<script>
+$(document).ready(function()
+{
+	// initBinding();
+	$.getJSON('/artist?name={{ artist_name }}&section=stats', 
+			function(data) {
+				var hot_width = "width:" + data['hotttnesss'] + "%;";
+				$('#hot_bar').attr("style", hot_width);
+				var fam_width = "width:" + data['familiarity'] + "%;";
+				$('#fam_bar').attr("style", fam_width);
+				var dance_width = "width:" + data['danceability'] + "%;";
+				$('#dance_bar').attr("style", dance_width);
+				console.log(data);
+			});
+});
+// function initBinding() 
+// { 
+// 	$("#danceability-bar").attr("style", "width: 0%;"); 
+// }
+</script>
+{% endblock %}
 
+{% block bodycontent %}
 <div class="row">
 	<div class="thumbnail span3">
 		<a href="{{ image_url }}"><img src="{{ image_url }}" alt="{{ artist_name }}"/></a>
@@ -10,13 +33,12 @@
 		<div class="well well-small">
 			<h4>Popularity</h4>
 			<div class="progress">
-				<div class="bar bar-info" style="width: {{ hotttnesss }}%;"></div>
-				<div class="bar bar-success" style="width: {{ familiarity }}%;"></div>
+				<div class="bar bar-info" id="hot_bar"></div>
+				<div class="bar bar-success" id="fam_bar"></div>
 			</div>
 			<h4>Average Danceability</h4>
 			<div class="progress">
-				<span id="danceability-bar"></span>
-				<div class="bar bar-info" style="width: {{ danceability }}%;"></div>
+				<div class="bar bar-info" id="dance_bar"></div>
 			</div>
 			<h4>Genres</h4>
 			<ul class="inline">
