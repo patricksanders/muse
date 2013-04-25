@@ -16,7 +16,7 @@ NUM_SONGS = 15
 
 random.seed()
 client = memcache.Client()
-	
+
 # Set EchoNest API credentials (values located in settings.py)
 enconfig.ECHO_NEST_API_KEY = ECHONEST_API_KEY
 enconfig.ECHO_NEST_CONSUMER_KEY = ECHONEST_CONSUMER_KEY
