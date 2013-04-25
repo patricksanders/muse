@@ -6,3 +6,7 @@ RDIO_CONSUMER_SECRET = ''
 ECHONEST_API_KEY = ''
 ECHONEST_CONSUMER_KEY = ''
 ECHONEST_SHARED_SECRET = ''
+
+# Tracking code (such as Google Analytics)
+TRACKING = '''\
+'''
