@@ -35,13 +35,13 @@ Site: [http://muse.patricksanders.net/](http://muse.patricksanders.net/)
 		* Other interesting information (based on community feedback)
 
 ## Technical Details ##
-Platform: Google App Engine
-Language: Python 2.7.x
-External Dependencies:
-	App Engine API
-	The Echo Nest API (requires API key)
-	Twitter Bootstrap front-end framework (accessed via CDN)
-	jQuery 2.0.0 (accessed via CDN)
+* Platform: Google App Engine
+* Language: Python 2.7.x
+* External Dependencies:
+	* App Engine API
+	* The Echo Nest API (requires API key)
+	* Twitter Bootstrap front-end framework (accessed via CDN)
+	* jQuery 2.0.0 (accessed via CDN)
 
 ## Known Issues ##
 * Exception handling - need to handle these exceptions gracefully
