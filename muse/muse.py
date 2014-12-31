@@ -4,11 +4,14 @@ import os
 import json
 import random
 from settings import *
+from flask import Flask
+# TODO: new implementation on caching
 from google.appengine.api import memcache
 from apis.pyechonest import config as enconfig
 from apis.pyechonest import *
 from apis.rdio import Rdio
 
+app = Flask('__name__')
 JINJA_ENVIRONMENT = jinja2.Environment(
 	loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
 
@@ -25,6 +28,7 @@ enconfig.ECHO_NEST_SHARED_SECRET = ECHONEST_SHARED_SECRET
 # Initialize Rdio connection
 rdio = Rdio((RDIO_CONSUMER_KEY, RDIO_CONSUMER_SECRET))
 
+@app.route('/')
 class MainPage(webapp2.RequestHandler):
 	def get(self):
 		memcache.add(key='hot_list',
@@ -39,6 +43,7 @@ class MainPage(webapp2.RequestHandler):
 		template = JINJA_ENVIRONMENT.get_template('templates/index.html')
 		self.response.write(template.render(template_values))
 		
+@app.route('/about')
 class AboutPage(webapp2.RequestHandler):
 	def get(self):
 		template_values = {
@@ -48,6 +53,7 @@ class AboutPage(webapp2.RequestHandler):
 		template = JINJA_ENVIRONMENT.get_template('templates/about.html')
 		self.response.write(template.render(template_values))
 
+@app.route('/artist')
 class GetArtist(webapp2.RequestHandler):
 	def get(self):
 		query = self.request.get('name')
@@ -175,7 +181,5 @@ class GetArtist(webapp2.RequestHandler):
 		}
 		return data
 
-app = webapp2.WSGIApplication([('/', MainPage),
-								('/about', AboutPage),
-								('/artist', GetArtist)],
-								debug=True)
+if __name__ == '__main__':
+	app.run(debug=DEBUG)
