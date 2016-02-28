@@ -7,7 +7,7 @@ from settings import *
 from google.appengine.api import memcache
 from apis.pyechonest import config as enconfig
 from apis.pyechonest import *
-from apis.rdio import Rdio
+#from apis.rdio import Rdio
 
 JINJA_ENVIRONMENT = jinja2.Environment(
 	loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
@@ -23,7 +23,7 @@ enconfig.ECHO_NEST_CONSUMER_KEY = ECHONEST_CONSUMER_KEY
 enconfig.ECHO_NEST_SHARED_SECRET = ECHONEST_SHARED_SECRET
 
 # Initialize Rdio connection
-rdio = Rdio((RDIO_CONSUMER_KEY, RDIO_CONSUMER_SECRET))
+#rdio = Rdio((RDIO_CONSUMER_KEY, RDIO_CONSUMER_SECRET))
 
 class MainPage(webapp2.RequestHandler):
 	def get(self):
